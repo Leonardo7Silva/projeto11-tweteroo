@@ -55,6 +55,10 @@ app.get("/tweets", (req,res)=>{
     let controle = [];
     let page = parseInt(req.query.page);
     let aux = 0;
+    if (page === NaN){
+        page = 1;
+    }
+
     if(page < 1){
         return res.status(400).send("informe uma página válida")
     }
