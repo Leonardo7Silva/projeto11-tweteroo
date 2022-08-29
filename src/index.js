@@ -18,11 +18,11 @@ let usuarios =[
 
 let tweets = [
     {
-        user: "bobesponja",
+        username: "bobesponja",
         tweet: "eu amo o hub"
     },
     {
-        user: "cao",
+        username: "cao",
         tweet: "au au"
     }
 ];
@@ -42,12 +42,12 @@ app.post("/sign-up", (req,res)=>{
 
 app.post("/tweets", (req,res)=>{
     let {tweet} = req.body;
-    let {user} = req.headers;
+    let username = req.headers.user;
 
     if(!tweet){
         return res.status(400).send("Todos os campos são obrigatórios!")
     }
-    tweets.push({user, tweet});
+    tweets.push({username, tweet});
     res.status(201).send("OK");
 });
 
@@ -60,14 +60,14 @@ app.get("/tweets", (req,res)=>{
     }
 
     if(page < 1){
-        return res.status(400).send("informe uma página válida")
+        return res.status(400).send("informe uma página válida");
     }
     if(tweets.length > 10*page){
         aux = tweets.length - 10*page;
     }
 
-    for (let i = aux; i < tweets.length - 10*(page-1); i++) {
-        let {avatar} = usuarios.find(value=> tweets[i].user === value.username)
+    for (let i = (tweets.length - 10*(page-1)-1); i > aux -1; i--) {
+        let {avatar} = usuarios.find(value=> tweets[i].username === value.username)
         controle.push({
             ...tweets[i],
             avatar
@@ -84,8 +84,8 @@ app.get("/tweets/:username", (req,res)=>{
         aux = tweets.length - 10
     }
 
-    for (let i = aux; i < tweets.length; i++) {
-        let {avatar} = usuarios.find(value=> tweets[i].user === value.username)
+    for (let i = tweets.length -1; i > aux-1; i--) {
+        let {avatar} = usuarios.find(value=> tweets[i].username === value.username)
         controle.push({
             ...tweets[i],
             avatar
@@ -93,7 +93,7 @@ app.get("/tweets/:username", (req,res)=>{
     }
 
     if(username){
-        let controleFiltrado = controle.filter( value => value.user === username);
+        let controleFiltrado = controle.filter( value => value.username === username);
         return res.send(controleFiltrado);
     }
     res.send(controle);
