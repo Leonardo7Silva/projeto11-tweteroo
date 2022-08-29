@@ -9,13 +9,21 @@ let usuarios =[
     {
         username: 'bobesponja', 
         avatar: "https://super.abril.com.br/wp-content/uploads/2020/09/04-09_gato_SITE.jpg?quality=70&strip=info" 
+    },
+    {
+        username: 'cao', 
+        avatar: "https://img.freepik.com/fotos-gratis/lindo-retrato-de-cachorro_23-2149218452.jpg?w=2000" 
     }
 ];
 
 let tweets = [
     {
-        username: "bobesponja",
+        user: "bobesponja",
         tweet: "eu amo o hub"
+    },
+    {
+        user: "cao",
+        tweet: "au au"
     }
 ];
 
@@ -24,27 +32,38 @@ app.get("/sign-up", (req,res) => {
 });
 
 app.post("/sign-up", (req,res)=>{
-    let {username, avatar} = req.body
+    let {username, avatar} = req.body;
+    if(!username || !avatar){
+        return res.status(400).send("Todos os campos são obrigatórios!")
+    }
     usuarios.push({username, avatar});
-    res.send("OK");
+    res.status(201).send("OK");
 });
 
 app.post("/tweets", (req,res)=>{
-    let {username, tweet} = req.body
-    tweets.push({username, tweet});
-    res.send("OK");
+    let {tweet} = req.body;
+    let {user} = req.headers;
+
+    if(!tweet){
+        return res.status(400).send("Todos os campos são obrigatórios!")
+    }
+    tweets.push({user, tweet});
+    res.status(201).send("OK");
 });
 
 app.get("/tweets", (req,res)=>{
     let controle = [];
+    let page = parseInt(req.query.page);
     let aux = 0;
-    if(tweets.length > 10){
-        aux = tweets.length - 10
+    if(page < 1){
+        return res.status(400).send("informe uma página válida")
+    }
+    if(tweets.length > 10*page){
+        aux = tweets.length - 10*page;
     }
 
-    for (let i = aux; i < tweets.length; i++) {
-        let {avatar} = usuarios.find(value=> tweets[i].username === value.username)
-        console.log(avatar);
+    for (let i = aux; i < tweets.length - 10*(page-1); i++) {
+        let {avatar} = usuarios.find(value=> tweets[i].user === value.username)
         controle.push({
             ...tweets[i],
             avatar
@@ -52,5 +71,29 @@ app.get("/tweets", (req,res)=>{
     }
     res.send(controle);
 });
+
+app.get("/tweets/:username", (req,res)=>{
+    let controle = [];
+    let aux = 0;
+    let {username} = req.params;
+    if(tweets.length > 10){
+        aux = tweets.length - 10
+    }
+
+    for (let i = aux; i < tweets.length; i++) {
+        let {avatar} = usuarios.find(value=> tweets[i].user === value.username)
+        controle.push({
+            ...tweets[i],
+            avatar
+        }); 
+    }
+
+    if(username){
+        let controleFiltrado = controle.filter( value => value.user === username);
+        return res.send(controleFiltrado);
+    }
+    res.send(controle);
+});
+
 
 app.listen(5000);
